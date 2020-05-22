@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using DisableSleep.Properties;
+﻿using DisableSleep.Properties;
 using Microsoft.Win32;
+using System;
+using System.Windows.Forms;
 
 namespace DisableSleep
 {
