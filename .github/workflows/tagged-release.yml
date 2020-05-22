@@ -18,7 +18,7 @@ jobs:
           MSBuild.exe $Env:GITHUB_WORKSPACE\ /t:Build /p:Configuration=Release
       - name: Compress files
         run: |
-          Compress-Archive -Path .\bin\Release\DisableSleep.exe -DestinationPath DisableSleep.zip -CompressionLevel Optimal
+          Compress-Archive -Path .\bin\Release\* -DestinationPath DisableSleep.zip -CompressionLevel Optimal
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
