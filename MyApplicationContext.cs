@@ -1,4 +1,4 @@
-﻿using DisableSleep.Properties;
+﻿// using DisableSleep.Properties;
 using Microsoft.Win32;
 using System;
 using System.Windows.Forms;
@@ -16,28 +16,25 @@ namespace DisableSleep
 
     public class MyApplicationContext : ApplicationContext
     {
-        private readonly bool useLightTheme;
+    
         private readonly NotifyIcon trayIcon;
-        private readonly ContextMenu awakeContextMenu;
-        private readonly ContextMenu sleepContextMenu;
+        private readonly ContextMenuStrip disableContextMenu;
+        private readonly ContextMenuStrip allowContextMenu;
 
         [System.Runtime.InteropServices.DllImport("kernel32.dll")]
         static extern uint SetThreadExecutionState(EXECUTION_STATE esFlags);
 
         public MyApplicationContext()
         {
-            useLightTheme = (int)Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 0) == 1;
+            disableContextMenu = new ContextMenuStrip();
+            disableContextMenu.Items.Add(new ToolStripMenuItem("Allow sleep", null, AllowSleep));
+            disableContextMenu.Items.Add(new ToolStripMenuItem("Exit", null, Exit));
 
-            awakeContextMenu = new ContextMenu(new MenuItem[] {
-                    new MenuItem("Allow sleep", AllowSleep),
-                    new MenuItem("Exit", Exit)
-                });
-            sleepContextMenu = new ContextMenu(new MenuItem[] {
-                    new MenuItem("Disable sleep", DisableSleep),
-                    new MenuItem("Exit", Exit)
-                });
-            trayIcon = new NotifyIcon
-            {
+            allowContextMenu = new ContextMenuStrip();
+            allowContextMenu.Items.Add(new ToolStripMenuItem("Disable sleep", null, DisableSleep));
+            allowContextMenu.Items.Add(new ToolStripMenuItem("Exit", null, Exit));
+
+            trayIcon = new NotifyIcon {
                 Visible = true
             };
             DisableSleep(this, new EventArgs());
@@ -47,24 +44,40 @@ namespace DisableSleep
         {
             SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_SYSTEM_REQUIRED);
 
-            trayIcon.Icon = (useLightTheme) ? Resources.IconDisableSleepLight : Resources.IconDisableSleepDark;
-            trayIcon.ContextMenu = awakeContextMenu;
+            trayIcon.Icon = GetIcon(false);
+            trayIcon.ContextMenuStrip = disableContextMenu;
         }
 
         private void AllowSleep(object sender, EventArgs e)
         {
             SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
 
-            trayIcon.Icon = (useLightTheme) ? Resources.IconAllowSleepLight : Resources.IconAllowSleepDark;
-            trayIcon.ContextMenu = sleepContextMenu;
+            trayIcon.Icon = GetIcon(true);
+            trayIcon.ContextMenuStrip = allowContextMenu;
         }
 
-
-        void Exit(object sender, EventArgs e)
+        private void Exit(object sender, EventArgs e)
         {
             AllowSleep(this, new EventArgs());
             trayIcon.Dispose();
             Application.Exit();
+        }
+
+        private readonly bool useLightTheme = (int)Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 0) == 1;
+        private System.Drawing.Icon GetIcon(bool isAllow) {
+            if (isAllow == false) {
+                if (useLightTheme) {
+                    return new System.Drawing.Icon("icons/disable-sleep-light.ico");
+                } else{
+                   return new System.Drawing.Icon("icons/disable-sleep-dark.ico");
+                }
+            } else {
+                if (useLightTheme) {
+                    return new System.Drawing.Icon("icons/allow-sleep-light.ico");
+                } else{
+                    return new System.Drawing.Icon("icons/allow-sleep-dark.ico");
+                }
+            }
         }
     }
 }
