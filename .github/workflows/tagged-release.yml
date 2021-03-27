@@ -18,11 +18,11 @@ jobs:
           dotnet-version: "3.1.x"
 
       - name: Build
-        run: dotnet build -c Release -o .\bin
+        run: dotnet publish -c Release -o .\bin
 
       - name: Compress files
         run: |
-          Compress-Archive -Path .\bin\* -DestinationPath DisableSleep.zip -CompressionLevel Optimal
+          Compress-Archive -Path .\bin\DisableSleep.exe -DestinationPath DisableSleep.zip -CompressionLevel Optimal
 
       - name: Create Release
         id: create_release
