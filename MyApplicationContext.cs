@@ -1,7 +1,7 @@
-﻿// using DisableSleep.Properties;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using System;
 using System.Windows.Forms;
+using System.Reflection;
 
 namespace DisableSleep
 {
@@ -37,12 +37,15 @@ namespace DisableSleep
             trayIcon = new NotifyIcon {
                 Visible = true
             };
+            trayIcon.Icon = GetIcon(false);
+            trayIcon.ContextMenuStrip = disableContextMenu;
             DisableSleep(this, new EventArgs());
         }
 
         private void DisableSleep(object sender, EventArgs e)
         {
-            SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_SYSTEM_REQUIRED);
+            var r = SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_DISPLAY_REQUIRED | EXECUTION_STATE.ES_SYSTEM_REQUIRED);
+            if (r == 0) return;
 
             trayIcon.Icon = GetIcon(false);
             trayIcon.ContextMenuStrip = disableContextMenu;
@@ -50,7 +53,8 @@ namespace DisableSleep
 
         private void AllowSleep(object sender, EventArgs e)
         {
-            SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
+            var r = SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);
+            if (r == 0) return;
 
             trayIcon.Icon = GetIcon(true);
             trayIcon.ContextMenuStrip = allowContextMenu;
@@ -59,23 +63,29 @@ namespace DisableSleep
         private void Exit(object sender, EventArgs e)
         {
             AllowSleep(this, new EventArgs());
+            
             trayIcon.Dispose();
             Application.Exit();
         }
 
         private readonly bool useLightTheme = (int)Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", 0) == 1;
         private System.Drawing.Icon GetIcon(bool isAllow) {
+            var assembly = typeof(MyApplicationContext).GetTypeInfo().Assembly;
             if (isAllow == false) {
                 if (useLightTheme) {
-                    return new System.Drawing.Icon("icons/disable-sleep-light.ico");
+                    var resource = assembly.GetManifestResourceStream("Icon.disable-sleep-light");
+                    return new System.Drawing.Icon(resource);
                 } else{
-                   return new System.Drawing.Icon("icons/disable-sleep-dark.ico");
+                    var resource = assembly.GetManifestResourceStream("Icon.disable-sleep-dark");
+                   return new System.Drawing.Icon(resource);
                 }
             } else {
                 if (useLightTheme) {
-                    return new System.Drawing.Icon("icons/allow-sleep-light.ico");
+                    var resource = assembly.GetManifestResourceStream("Icon.allow-sleep-light");
+                    return new System.Drawing.Icon(resource);
                 } else{
-                    return new System.Drawing.Icon("icons/allow-sleep-dark.ico");
+                    var resource = assembly.GetManifestResourceStream("Icon.allow-sleep-dark");
+                    return new System.Drawing.Icon(resource);
                 }
             }
         }

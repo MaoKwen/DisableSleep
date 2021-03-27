@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/netcoreapp3.1/DisableSleep.dll",
+            "program": "${workspaceFolder}/bin/Debug/net5.0-windows/win-x64/DisableSleep.exe",
             "args": [],
             "cwd": "${workspaceFolder}",
             "console": "internalConsole",
